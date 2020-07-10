@@ -1,0 +1,47 @@
+# deploy.yaml
+# author : andrew@openmarmot.com
+# last update : July 08 2020
+
+#requires my bash script to replace env variables with values
+
+# describe service to get the nodeport (easier to let kubernetes pick it)
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: timezone-openmarmot-com-service
+spec:
+  selector:
+    app: timezone-openmarmot-com
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+  type: NodePort
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timezone-openmarmot-com-deployment
+  labels:
+    app: timezone-openmarmot-com
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: timezone-openmarmot-com
+  template:
+    metadata:
+      labels:
+        app: timezone-openmarmot-com
+    spec:
+      containers:
+      - name: timezone-openmarmot-com
+        image: ${aws_account}.dkr.ecr.us-west-2.amazonaws.com/timezone.openmarmot.com:latest
+        imagePullPolicy: Always
+        ports:
+      imagePullSecrets:
+      - name: us-west-2-ecr-registry
